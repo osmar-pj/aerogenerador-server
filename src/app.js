@@ -8,9 +8,7 @@ import { createServer } from 'http'
 
 // importamos las rutas
 // import wapRoutes from "./routes/waps.routes";
-import userRoutes from './routes/user.routes'
-import deviceRoutes from './routes/device.routes'
-import InstrumentRoutes from './routes/instrument.routes'
+import reportRoutes from './routes/report.routes'
 
 
 import { createRoles, createAdmin } from "./libs/initialSetup"
@@ -46,9 +44,7 @@ app.use(express.urlencoded({ extended: false }))
 
 // Routes
 // app.use("/api/waps", wapRoutes)
-app.use('/api/auth/signin', userRoutes)
-app.use('/api/device', deviceRoutes)
-app.use('/api/instrument', InstrumentRoutes)
+app.use('/api/report', reportRoutes)
 
 
 // Sockets
@@ -74,7 +70,7 @@ const client = mqtt.connect(connectUrl, options)
 client.on('connect', () => {
   console.log('Client connected by SERVER:')
   // Subscribe
-  client.subscribe('unsaac/aerogenerador/sensores', { qos: 0 })
+  client.subscribe('unsaac/aerogenerador/#', { qos: 0 })
 })
 
 client.on('message', async (topic, message) => {
@@ -94,7 +90,7 @@ setInterval(async () => {
   }
 }, 5000)
 
-server.listen(4000, () => {
+server.listen(3000, () => {
   console.log('server is ok')
 })
 
