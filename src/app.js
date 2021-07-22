@@ -10,7 +10,6 @@ import { createServer } from 'http'
 // import wapRoutes from "./routes/waps.routes";
 import reportRoutes from './routes/report.routes'
 
-
 import { createRoles, createAdmin } from "./libs/initialSetup"
 
 // importamos los modelos
@@ -75,18 +74,22 @@ client.on('connect', () => {
 
 client.on('message', async (topic, message) => {
   const data = JSON.parse(message.toString())
-  console.log(data)
-  if (data) {
-    const new_device = new House(data)
-    await new_device.save()
+  if(data.esp32) {
+    const save_data = new House(data.esp32)
+    await save_data.save()
+  } else if(data.raspberry) {
+    const save_data = new House(data.raspberry)
+    await save_data.save()
   }
 })
 
 setInterval(async () => {
-  let sensors = await House.find().sort({_id: -1}).limit(1)
+  let sensor_esp = await House.find({mac: '24:0A:C4:16:72:00'}).sort({_id: -1}).limit(1)
+  let sensor_rasp = await House.find({mac: 'raspberry'}).sort({_id: -1}).limit(1)
+  // console.log(sensor_esp, sensor_rasp)
   for (let i in USERS) {
-    USERS[i].emit('sensors', sensors)
-    // USERS[i].emit('winex', winex)
+    USERS[i].emit('sensor_esp', sensor_esp)
+    USERS[i].emit('sensor_rasp', sensor_rasp)
   }
 }, 5000)
 

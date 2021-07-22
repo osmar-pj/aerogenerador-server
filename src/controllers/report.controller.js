@@ -10,28 +10,38 @@ export const reportDay = async (req, res) => {
             now: now_utc
             // last: new Date(Date.UTC(now_utc.getUTCFullYear(), now_utc.getUTCMonth(), 2, 0, 0, 0))
         }
-        console.log(dates, dates.now.getUTCHours())
-        const parameters = await House.find({ createdAt: { $gt: dates.first, $lt: dates.now } })
-        const t = []
-        const h = []
-        const v = []
-        const I = []
-        for (let i = 0; i < parameters.length; i++) {
-            t[i] = parseFloat(parameters[i].values.t)
-            h[i] = parseFloat(parameters[i].values.h)
-            v[i] = parseFloat(parameters[i].values.v)
-            I[i] = parseFloat(parameters[i].values.I)
+        let data = {}
+        let data_esp = {
+            t: [],
+            h: [],
+            v: [],
+            I: [],
+            P: [] 
         }
-        let data = []
-        let horas = dates.now.getUTCHours()
-        if (parametro == 'temperature') {
-            data = t
-        } else if (parametro == 'humidity') {
-            data = h
-        } else if (parametro == 'voltage') {
-            data = v
-        } else if (parametro == 'current') {
-            data = I
+        let data_rasp = {
+            wind: [],
+            angle: []
+        }
+        let horas = []
+        if (parametro == 'temperature' || parametro == 'humidity' || parametro == 'voltage' || parametro == 'current' || parametro == 'power') {
+            const parameters = await House.find({mac: '24:0A:C4:16:72:00', createdAt: { $gt: dates.first, $lt: dates.now } })
+            for (let i = 0; i < parameters.length; i++) {
+                data_esp.t[i] = parseFloat(parameters[i].values.t)
+                data_esp.h[i] = parseFloat(parameters[i].values.h)
+                data_esp.v[i] = parseFloat(parameters[i].values.v)
+                data_esp.I[i] = parseFloat(parameters[i].values.I)
+                data_esp.P[i] = parseFloat((data_esp.v[i] * data_esp.I[i]).toFixed(2))
+            }
+            data = data_esp
+            horas = [parameters[0].createdAt, parameters[parameters.length - 1].createdAt]
+        } else if (parametro == 'wind' || parametro == 'angle') {
+            const parameters = await House.find({mac: 'raspberry', createdAt: { $gt: dates.first, $lt: dates.now } })
+            for (let i = 0; i < parameters.length; i++) {
+                data_rasp.wind[i] = parseFloat(parameters[i].values[15])
+                data_rasp.angle[i] = parseFloat(parameters[i].values[17])
+            }
+            horas = [parameters[0].createdAt, parameters[parameters.length - 1].createdAt]
+            data = data_rasp
         }
         res.status(200).json({
             data: data,
