@@ -6,10 +6,11 @@ export const reportDay = async (req, res) => {
         const now = new Date()
         const now_utc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours()-5, now.getUTCMinutes(), now.getUTCSeconds()))
         const dates = {
-            first: new Date(Date.UTC(now_utc.getUTCFullYear(), now_utc.getUTCMonth(), now_utc.getUTCDate() - 1, 0, 0, 0)),
+            first: new Date(Date.UTC(now_utc.getUTCFullYear(), now_utc.getUTCMonth(), now_utc.getUTCDate(), 0, 0, 0)),
             now: now_utc
             // last: new Date(Date.UTC(now_utc.getUTCFullYear(), now_utc.getUTCMonth(), 2, 0, 0, 0))
         }
+        console.log(dates)
         let data = {}
         let data_esp = {
             t: [],
@@ -43,6 +44,7 @@ export const reportDay = async (req, res) => {
             horas = [parameters[0].createdAt, parameters[parameters.length - 1].createdAt]
             data = data_rasp
         }
+        console.log(data)
         res.status(200).json({
             data: data,
             horas: horas
