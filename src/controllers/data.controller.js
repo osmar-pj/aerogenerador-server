@@ -3,8 +3,8 @@ import House from '../models/House'
 export const getDataByDates = async (req, res) => {
     try {
         const dates = {
-            first: new Date(req.body.dates.first),
-            last: new Date(req.body.dates.last)
+            first: new Date(req.body.first),
+            last: new Date(req.body.last)
         }
         let data_esp = {
             t: [],
