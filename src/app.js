@@ -9,6 +9,7 @@ import { createServer } from 'http'
 // importamos las rutas
 // import wapRoutes from "./routes/waps.routes";
 import reportRoutes from './routes/report.routes'
+import dataRoutes from './routes/data.routes'
 
 import { createRoles, createAdmin } from "./libs/initialSetup"
 
@@ -44,6 +45,7 @@ app.use(express.urlencoded({ extended: false }))
 // Routes
 // app.use("/api/waps", wapRoutes)
 app.use('/api/report', reportRoutes)
+app.use('/api/data', dataRoutes)
 
 
 // Sockets
@@ -74,24 +76,26 @@ client.on('connect', () => {
 
 client.on('message', async (topic, message) => {
   const data = JSON.parse(message.toString())
-  if(data.esp32) {
+  if (data.esp32) {
     const save_data = new House(data.esp32)
     await save_data.save()
-  } else if(data.raspberry) {
+  } else if (data.raspberry) {
     const save_data = new House(data.raspberry)
     await save_data.save()
   }
-})
-
-setInterval(async () => {
   let sensor_esp = await House.find({mac: '24:0A:C4:16:72:00'}).sort({_id: -1}).limit(1)
   let sensor_rasp = await House.find({mac: 'raspberry'}).sort({_id: -1}).limit(1)
   // console.log(sensor_esp, sensor_rasp)
-  for (let i in USERS) {
-    USERS[i].emit('sensor_esp', sensor_esp)
-    USERS[i].emit('sensor_rasp', sensor_rasp)
+  let monitoring = {
+    v: parseFloat(sensor_esp[0].values.v),
+    t: parseFloat(sensor_esp[0].values.t),
+    h: parseFloat(sensor_esp[0].values.h),
+    wind: sensor_rasp[0].values[15]
   }
-}, 5000)
+  for (let i in USERS) {
+    USERS[i].emit('monitoring', monitoring)
+  }
+})
 
 server.listen(3000, () => {
   console.log('server is ok')
